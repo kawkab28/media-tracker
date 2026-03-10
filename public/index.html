@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Media Tracker</title>
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+
+<body class="container mt-4">
+
+<h2>Media Tracker</h2>
+
+<h4>Add Media</h4>
+
+<input id="title" class="form-control mb-2" placeholder="Title">
+<input id="creator" class="form-control mb-2" placeholder="Creator">
+<input id="genre" class="form-control mb-2" placeholder="Genre">
+<input id="release" class="form-control mb-2" placeholder="Release Date">
+<input id="status" class="form-control mb-2" placeholder="Status">
+
+<button onclick="addMedia()" class="btn btn-primary">Add</button>
+
+<hr>
+
+<h4>Search</h4>
+
+<input id="search" class="form-control mb-2" placeholder="Search">
+
+<button onclick="searchMedia()" class="btn btn-secondary">Search</button>
+
+<hr>
+
+<h4>Media List</h4>
+
+<ul id="mediaList"></ul>
+
+<hr>
+
+<h4>AI Recommendation</h4>
+
+<input id="aiTitle" class="form-control mb-2" placeholder="Movie title">
+
+<button onclick="recommend()" class="btn btn-success">Get AI Recommendations</button>
+
+<p id="aiResult"></p>
+
+<script>
+
+const API = "http://localhost:3000";
+
+async function loadMedia() {
+
+  const res = await fetch(API + "/media");
+  const data = await res.json();
+
+  const list = document.getElementById("mediaList");
+  list.innerHTML = "";
+
+  data.forEach(m => {
+
+    const li = document.createElement("li");
+
+    li.innerHTML = `${m.title} (${m.genre})`;
+
+    list.appendChild(li);
+
+  });
+
+}
+
+async function addMedia(){
+
+  const title = document.getElementById("title").value;
+  const creator = document.getElementById("creator").value;
+  const genre = document.getElementById("genre").value;
+  const release = document.getElementById("release").value;
+  const status = document.getElementById("status").value;
+
+  await fetch(API + "/media",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+      title,
+      creator,
+      genre,
+      release_date:release,
+      status,
+      user_id:1
+    })
+
+  });
+
+  loadMedia();
+
+}
+
+async function searchMedia(){
+
+  const q = document.getElementById("search").value;
+
+  const res = await fetch(API + "/media/search?q=" + q);
+
+  const data = await res.json();
+
+  const list = document.getElementById("mediaList");
+
+  list.innerHTML="";
+
+  data.forEach(m=>{
+
+    const li=document.createElement("li");
+
+    li.innerHTML=`${m.title} (${m.genre})`;
+
+    list.appendChild(li);
+
+  });
+
+}
+
+async function recommend(){
+
+  const title=document.getElementById("aiTitle").value;
+
+  const res=await fetch(API+"/ai/recommend?title="+title);
+
+  const data=await res.json();
+
+  document.getElementById("aiResult").innerText=data.recommendations;
+
+}
+
+loadMedia();
+
+</script>
+
+</body>
+</html>
